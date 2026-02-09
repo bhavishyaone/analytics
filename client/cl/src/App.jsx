@@ -1,14 +1,14 @@
 import './App.css'
-import {Button} from './components/ui/button.jsx'
+import { BrowserRouter,Routes,Route } from 'react-router-dom';
+import {Register} from './pages/Register.jsx'
 function App(){
   return (
-    <>
-    <h1 className="text-4xl font-bold underline  ">
-      Chaliye Shuru krte hai.
-    </h1>
-    <Button className="bg-black text-white hover:bg-black/80">Press it.</Button>
-  </>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/register" element={<Register />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;
