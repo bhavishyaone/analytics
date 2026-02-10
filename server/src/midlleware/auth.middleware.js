@@ -5,7 +5,7 @@ const authMiddleware = async(req,res,next)=>{
 
     const authHeaders = req.headers.authorization
     
-    if(!authHeaders || !authHeaders.startWith("Bearer ")){
+    if(!authHeaders || !authHeaders.startsWith("Bearer ")){
         return res.status(401).json({message:"Not authorized"})
     }
 
