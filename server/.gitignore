@@ -1,2 +1,6 @@
 .env
 node_modules/
+.DS_Store
+server/.DS_Store
+server/src/.DS_Store
+ .DS_Store

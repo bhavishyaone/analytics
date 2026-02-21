@@ -7,7 +7,7 @@ const generateToken = (userId)=>{
     return jwt.sign(
         { id: userId },
         process.env.JWT_SECRET,
-        { expiresIn: "7d" }
+        { expiresIn:process.env.JWT_EXPIRES_IN}
     );
 
 };
@@ -31,7 +31,17 @@ export const register = async(req,res)=>{
 
         const user = await User.create({email:email,password:hashedPassword})
 
-        return res.status(201).json({message:"User created",user})
+        return res.status(201).json(
+            {
+                message:"User created",
+                user:{
+                    id: user._id,
+                    email: user.email,
+                    createdAt: user.createdAt                    
+                }
+
+            }
+        )
    }
     catch(err){
         console.log(err)
