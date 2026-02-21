@@ -19,6 +19,9 @@ app.use("/api/auth",authRoutes)
 app.use("/api/projects",projectRoutes)
 
 
+app.use((req, res) => {
+    res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: `Route ${req.method} ${req.path} not found` } })
+})
 app.use(errorHandler)
 
 export default app;
