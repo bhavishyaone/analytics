@@ -4,8 +4,10 @@ import helmet from 'helmet'
 import authRoutes from '../server/src/routes/auth.routes.js'
 import projectRoutes from '../server/src/routes/project.routes.js'
 import errorHandler from '../server/src/midlleware/error.middleware.js'
+import { httpLogger } from '../server/src/config/logger.js'
 
 const app = express();
+app.use(httpLogger);
 app.use(cors());
 app.use(helmet());
 app.use(express.json());
