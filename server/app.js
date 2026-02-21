@@ -3,6 +3,7 @@ import cors from 'cors'
 import helmet from 'helmet'
 import authRoutes from '../server/src/routes/auth.routes.js'
 import projectRoutes from '../server/src/routes/project.routes.js'
+import errorHandler from '../server/src/midlleware/error.middleware.js'
 
 const app = express();
 app.use(cors());
@@ -16,6 +17,10 @@ app.get("/",(req,res)=>{
 
 app.use("/api/auth",authRoutes)
 app.use("/api/projects",projectRoutes)
+
+
+app.use(errorHandler)
+
 export default app;
 
 
