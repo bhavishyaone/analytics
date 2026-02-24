@@ -4,7 +4,9 @@ const projectSchema = new mongoose.Schema({
     name:{
         type:String,
         required:true,
-        trim:true
+        trim:true,
+        minlength:5,
+        maxlength:60
     },
 
     owner:{
@@ -21,5 +23,8 @@ const projectSchema = new mongoose.Schema({
 },
     {timestamps:true}
 )
+projectSchema.index({ ownerId: 1 });
+projectSchema.index({ apiKey: 1 });
+
 
 export default mongoose.model("Project",projectSchema)
