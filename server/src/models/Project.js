@@ -23,7 +23,7 @@ const projectSchema = new mongoose.Schema({
 },
     {timestamps:true}
 )
-projectSchema.index({ ownerId: 1 });
+projectSchema.index({ owner: 1 });
 
 
 
