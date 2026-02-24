@@ -1,65 +1,36 @@
+import { createProjectService } from "../services/project.service.js";
 import Project from "../models/Project.js";
-import { generateApiKey } from "../utils/generateApiKey.js";
 
-
-// CREATE PROJECT
+// Create Project 
 export const createProject = async(req,res)=>{
     try{
         const {name} = req.body
-        
-
         if(!name){
-            return res.status(400).json({message:"Name is required."})
+            return res.status(400).json({message:"Project Name is required."})
+        }
+        if(name.trim().length<5){
+            return res.status(400).json({message:"Name must be at least 5 characters." })
+        }
+        if(name.trim().length>60){
+            return res.status(400).json({message:"Name must be at most 60 characters."})
         }
 
-        const existingProject = await Project.findOne({name:name})
+        const existingProject  =await Project.findOne({name:name.trim(),owner:req.user.id})
         if(existingProject){
             return res.status(400).json({message:"Project already exists."})
-        }
+        } 
 
-        
-
-        const project = await Project.create({
-            name:name,
-            owner:req.user.id,
-            apiKey:generateApiKey()
-        
-        })
-
+        const project = await createProjectService({name:name.trim(), owner:req.user.id});
         return res.status(201).json({
-            message: "Project created successfully",
-            project: {
-                id: project._id,
-                name: project.name,
-                apiKey: project.apiKey
-            }
+            message:"Project created successfully" ,
+            project
         })
 
+
     }
     catch(err){
         console.log(err)
-        return  res.status(500).json({message:'server error.'})
+        return res.status(500).json({message:"Server error"})
     }
 
-};
-
-
-// LIST USER PROJECT
-
-
-export const getProjects = async(req,res)=>{
-    try{
-        const projects = await Project.find({ owner: req.user.id })
-        .sort({ createdAt: -1 });
-
-        return res.status(200).json(projects)
-    }
-    catch(err){
-        console.log(err)
-        return res.status(500).json({message:"server error."})
-
-
-    }
 }
-
-
