@@ -1,4 +1,4 @@
-import { createProjectService,getAllProjectService ,getProjectByIDService} from "../services/project.service.js";
+import { createProjectService,getAllProjectService ,getProjectByIDService,deleteProjectByIDService} from "../services/project.service.js";
 import Project from "../models/Project.js";
 import mongoose from "mongoose";
 
@@ -72,5 +72,24 @@ export const getProjectById = async(req,res)=>{
         console.log(err)
         return res.status(500).json({message:"Server error."})
         
+    }
+}
+
+
+// Delete by ID 
+export const deleteProjectByID = async(req,res)=>{
+    try{
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(404).json({ message: "Project Id is invalid." });
+        }
+        const result = await deleteProjectByIDService(req.params.id, req.user.id);
+        if(!result){
+            return res.status(404).json({message:"Project not found"})
+        }
+        return res.status(200).json({ message: 'Project deleted successfully' });
+    }
+    catch(err){
+        console.log(err)
+        return res.status(500).json({message:"server error."})
     }
 }

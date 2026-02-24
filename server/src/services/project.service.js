@@ -26,3 +26,14 @@ export const getProjectByIDService = async(projectId, owner)=>{
     const project = await Project.findOne({ _id: projectId, owner: owner })
     return project
 }
+
+
+// Delet Project BY id
+
+export const deleteProjectByIDService = async(projectId, owner)=>{
+    const project = await Project.findOne({_id: projectId, owner: owner})
+    if(!project){
+        return null
+    }
+    return Project.findByIdAndDelete(projectId)
+}
