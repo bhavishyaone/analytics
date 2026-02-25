@@ -67,5 +67,38 @@ export const getEventsOverTimeService = async(projectId,days)=>{
         date: e._id,
         count: e.count,
     }))
+}
 
+
+// Top 10 Events joh ho rahe hai 
+
+export const getTopEventsService = async(projectId,days)=>{
+    const startDate  = new Date()
+    startDate.setDate(startDate.getDate()-days)
+
+    const result = Event.aggregate([
+        {
+            $match:{
+                projectId: toObjectId(projectId),
+                timestamp: { $gte: startDate }
+            }
+        },
+        {
+            $group:{
+                _id:'$name',
+                count: { $sum: 1 }
+            }
+        },
+        {
+            $sort: { count: -1 }
+        },
+        {
+            $limit:10
+        }
+    ])
+
+    return (await result).map((e)=>({
+        eventName : e._id,
+        count : e.count
+    }))
 }
