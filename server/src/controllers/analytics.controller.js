@@ -21,7 +21,7 @@ export const getOverview = async(req,res)=>{
 
         const days = parseInt(req.query.days) || 30
         if(days<1 || days>365){
-            return res.status(400).json({message:"Days onlbe in between 1 and 365"})
+            return res.status(400).json({message:"days must be between 1 and 365"})
         }
         
         const data = await getOverviewServices(req.params.projectId, days);
@@ -45,7 +45,7 @@ export const getEventsOverTime = async(req,res)=>{
         const days = parseInt(req.query.days) || 30
 
         if(days<1 || days>365){
-            return res.status(400).json({message:"Days onlbe in between 1 and 365"})
+            return res.status(400).json({message:"days must be between 1 and 365"})
         }
 
         const data = await getEventsOverTimeService(req.params.projectId, days);
@@ -68,7 +68,7 @@ export const getTopEvents = async(req,res)=>{
         const days = parseInt(req.query.days) || 30
         
         if(days<1 || days>365){
-            return res.status(400).json({message:"Days onlbe in between 1 and 365"})
+            return res.status(400).json({message:"days must be between 1 and 365"})
         }
 
         const data  = await getTopEventsService(req.params.projectId,days)
@@ -89,7 +89,7 @@ export const getTopEvents = async(req,res)=>{
 export const getActiveUser = async(req,res)=>{
     try{
         const project = await getOwnedProject(req.params.projectId,req.user.id)
-        console.log(project)
+        // console.log(project)
         
         if(!project){
             return res.status(400).json({message:"Project not found"})
