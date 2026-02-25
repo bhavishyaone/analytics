@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 import Project from '../models/Project.js'
-import {getOverviewServices,getEventsOverTimeService,getTopEventsService} from '../services/analytics.service.js'
+import {getOverviewServices,getEventsOverTimeService,getTopEventsService,getActiveUsersService} from '../services/analytics.service.js'
 
 const getOwnedProject = async(projectId,userId)=>{
     if(!mongoose.Types.ObjectId.isValid(projectId)){
@@ -43,6 +43,7 @@ export const getEventsOverTime = async(req,res)=>{
         }
 
         const days = parseInt(req.query.days) || 30
+
         if(days<1 || days>365){
             return res.status(400).json({message:"Days onlbe in between 1 and 365"})
         }
@@ -75,6 +76,28 @@ export const getTopEvents = async(req,res)=>{
 
 
     }   
+    catch(err){
+        console.log(err)
+        return res.status(500).json({message:"Server error."})
+    }
+}
+
+
+// GEt Active USers 
+
+
+export const getActiveUser = async(req,res)=>{
+    try{
+        const project = await getOwnedProject(req.params.projectId,req.user.id)
+        console.log(project)
+        
+        if(!project){
+            return res.status(400).json({message:"Project not found"})
+        }
+
+        const data = await getActiveUsersService(req.params.projectId)
+        return res.status(200).json({data})
+    }
     catch(err){
         console.log(err)
         return res.status(500).json({message:"Server error."})

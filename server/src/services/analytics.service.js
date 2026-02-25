@@ -102,3 +102,42 @@ export const getTopEventsService = async(projectId,days)=>{
         count : e.count
     }))
 }
+
+
+// Active User services 
+
+export const getActiveUsersService = async(projectId)=>{
+    const now = new Date()
+
+    const oneDayAgo = new Date(now - 1 * 24 * 60 * 60 * 1000);
+    const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(now - 30 * 24 * 60 * 60 * 1000);
+
+    const [dauIds, wauIds, mauIds] = await Promise.all([
+
+      Event.distinct('userId',{
+        projectId: projectId,
+        userId: { $ne: null },
+        timestamp: { $gte: oneDayAgo },
+      }),
+
+      Event.distinct('userId',{
+        projectId: projectId,
+        userId: { $ne: null },
+        timestamp: { $gte: sevenDaysAgo }
+      }),
+
+      Event.distinct('userId', {
+        projectId: projectId,
+        userId: { $ne: null },
+        timestamp: { $gte: thirtyDaysAgo },
+      }),
+
+    ])
+
+    return {
+        dau:dauIds.length,
+        wau:wauIds.length,
+        mau:mauIds.length
+    }
+}
