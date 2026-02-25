@@ -11,3 +11,19 @@ export const trackEventService = async({projectId,name,userId,properties,timesta
     });
     return event
 }
+
+// Batch Track Service
+
+export const batchTrackService = async({projectId,events})=>{   
+    const docs = events.map((e)=>({
+        projectId: projectId,
+        name: e.name,
+        userId: e.userId || null,
+        properties: e.properties || {},
+        timestamp: e.timestamp ? new Date(e.timestamp) : new Date(),
+    }))
+
+    const result  = await Event.insertMany(docs)
+    return result
+
+}

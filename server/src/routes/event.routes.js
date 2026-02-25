@@ -1,5 +1,5 @@
 import express from 'express'
-import { trackEvent } from '../controllers/event.controller.js'
+import { trackEvent ,batchTrackEvent} from '../controllers/event.controller.js'
 import apiKeyMiddleware from '../midlleware/apiKey.middleware.js'
 import rateLimit from 'express-rate-limit'
 
@@ -19,5 +19,6 @@ router.use(rateLimiter)
 router.use(apiKeyMiddleware)
 
 router.post("/track",trackEvent)
+router.post("/batch",batchTrackEvent)
 
 export default router;
