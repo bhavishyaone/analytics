@@ -141,3 +141,100 @@ export const getActiveUsersService = async(projectId)=>{
         mau:mauIds.length
     }
 }
+
+
+
+
+export const getRetentionService = async (projectId, days) => {
+    
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days);
+
+  const objectId = new mongoose.Types.ObjectId(projectId);
+
+  const userFirstSeen = await Event.aggregate([
+    {
+      $match: {
+        projectId: objectId,
+        userId: { $ne: null },
+        timestamp: { $gte: startDate },
+      },
+    },
+    {
+      $group: {
+        _id: '$userId',
+        firstSeen: { $min: '$timestamp' },
+      },
+    },
+  ]);
+
+  const userLastSeen = await Event.aggregate([
+    {
+      $match: {
+        projectId: objectId,
+        userId: { $ne: null },
+        timestamp: { $gte: startDate },
+      },
+    },
+    {
+      $group: {
+        _id: '$userId',
+        lastSeen: { $max: '$timestamp' },
+      },
+    },
+  ]);
+
+  const lastSeenMap = {};
+  for (const u of userLastSeen) {
+    lastSeenMap[u._id] = u.lastSeen;
+  }
+
+  const cohorts = {};
+
+  for (const user of userFirstSeen) {
+    const d = new Date(user.firstSeen);
+    const dayOfWeek = d.getDay();
+    const monday = new Date(d);
+    monday.setDate(d.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+    const weekKey = monday.toISOString().split('T')[0];
+
+    if (!cohorts[weekKey]) {
+      cohorts[weekKey] = [];
+    }
+
+    cohorts[weekKey].push({
+      userId: user._id,
+      firstSeen: user.firstSeen,
+      lastSeen: lastSeenMap[user._id] || user.firstSeen,
+    });
+  }
+
+  const retentionPeriods = [1, 7, 14, 30];
+
+  const result = Object.keys(cohorts)
+    .sort()
+    .map((weekKey) => {
+      const users = cohorts[weekKey];
+      const totalUsers = users.length;
+
+      const retention = {};
+
+      for (const period of retentionPeriods) {
+        const count = users.filter((u) => {
+          const diffMs = new Date(u.lastSeen) - new Date(u.firstSeen);
+          const diffDays = diffMs / (1000 * 60 * 60 * 24);
+          return diffDays >= period;
+        }).length;
+
+        retention[`day${period}`] = count;
+      }
+
+      return {
+        cohortWeek: weekKey,
+        totalUsers,
+        ...retention,
+      };
+    });
+
+  return result;
+};
