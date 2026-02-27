@@ -8,6 +8,8 @@ import analyticsRoutes from '../server/src/routes/analytics.routes.js'
 import funnelRoutes from '../server/src/routes/funnel.routes.js'
 import errorHandler from '../server/src/midlleware/error.middleware.js'
 import { httpLogger } from '../server/src/config/logger.js'
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from '../server/src/config/swagger.js';
 
 const app = express();
 app.use(httpLogger);
@@ -25,6 +27,7 @@ app.use("/api/projects",projectRoutes)
 app.use("/api/events",eventRoutes)
 app.use("/api/analytics",analyticsRoutes)
 app.use("/api/funnel",funnelRoutes)
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
 app.use((req, res) => {
