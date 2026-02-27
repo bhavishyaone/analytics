@@ -5,6 +5,7 @@ import authRoutes from '../server/src/routes/auth.routes.js'
 import projectRoutes from '../server/src/routes/project.routes.js'
 import eventRoutes from '../server/src/routes/event.routes.js'
 import analyticsRoutes from '../server/src/routes/analytics.routes.js'
+import funnelRoutes from '../server/src/routes/funnel.routes.js'
 import errorHandler from '../server/src/midlleware/error.middleware.js'
 import { httpLogger } from '../server/src/config/logger.js'
 
@@ -23,6 +24,7 @@ app.use("/api/auth",authRoutes)
 app.use("/api/projects",projectRoutes)
 app.use("/api/events",eventRoutes)
 app.use("/api/analytics",analyticsRoutes)
+app.use("/api/funnel",funnelRoutes)
 
 
 app.use((req, res) => {
