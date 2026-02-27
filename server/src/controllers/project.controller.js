@@ -1,4 +1,4 @@
-import { createProjectService,getAllProjectService ,getProjectByIDService,deleteProjectByIDService} from "../services/project.service.js";
+import { createProjectService,getAllProjectService ,getProjectByIDService,deleteProjectByIDService,rotateApiKeyService} from "../services/project.service.js";
 import Project from "../models/Project.js";
 import mongoose from "mongoose";
 
@@ -93,3 +93,25 @@ export const deleteProjectByID = async(req,res)=>{
         return res.status(500).json({message:"server error."})
     }
 }
+
+
+export const rotateApiKey = async (req, res) => {
+  try {
+
+    const newApiKey = await rotateApiKeyService(req.params.id, req.user.id);
+
+    if (!newApiKey) {
+      return res.status(404).json({ message: "Project not found."});
+    }
+
+    return res.status(200).json({
+      message: "API key rotated successfully. Update your SDK with the new key.",
+      apiKey: newApiKey,
+    });
+
+  } 
+  catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error."});
+  }
+};
