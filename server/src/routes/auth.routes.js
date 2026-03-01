@@ -119,11 +119,15 @@ router.get('/me', authMiddleware, getMe)
  *               newPassword:
  *                 type: string
  *                 example: NewPass456!
+ *               confirmPassword:
+ *                 type: string
+ *                 example: NewPass456!
+ *                 description: Must match newPassword
  *     responses:
  *       200:
  *         description: Account updated
  *       400:
- *         description: Validation error
+ *         description: Validation error or passwords do not match
  *       401:
  *         description: Wrong current password
  */
