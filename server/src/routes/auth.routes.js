@@ -1,6 +1,7 @@
-import { login, register } from '../controllers/auth.controller.js'
+import { login, register,getMe, updateMe } from '../controllers/auth.controller.js'
 import express from 'express'
 import rateLimiter from '../midlleware/rateLimiter.js'
+import authMiddleware from '../midlleware/auth.middleware.js'
 
 const router = express.Router()
 
@@ -71,5 +72,61 @@ router.post("/register", register)
  *         description: Invalid credentials
  */
 router.post("/login", login)
+
+
+/**
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     summary: Get current logged-in user profile
+ *     tags:
+ *       - Auth
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Returns user object (without password)
+ *       401:
+ *         description: Not authenticated
+ */
+router.get('/me', authMiddleware, getMe)
+
+
+/**
+ * @swagger
+ * /api/auth/me:
+ *   patch:
+ *     summary: Update current user profile (name, email, password)
+ *     tags:
+ *       - Auth
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: Bhavishya Sharma
+ *               email:
+ *                 type: string
+ *                 example: new@email.com
+ *               currentPassword:
+ *                 type: string
+ *                 example: OldPass123!
+ *               newPassword:
+ *                 type: string
+ *                 example: NewPass456!
+ *     responses:
+ *       200:
+ *         description: Account updated
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Wrong current password
+ */
+router.patch('/me', authMiddleware, updateMe)
 
 export default router;

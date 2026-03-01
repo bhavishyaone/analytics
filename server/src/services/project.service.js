@@ -40,6 +40,17 @@ export const deleteProjectByIDService = async(projectId, owner)=>{
 }
 
 
+// Update Project Name
+export const updateProjectService = async (projectId, ownerId, name) => {
+    const project = await Project.findOneAndUpdate(
+        { _id: projectId, owner: ownerId },
+        { name: name.trim() },
+        { new: true }
+    )
+    return project
+}
+
+
 export const rotateApiKeyService = async (projectId, ownerId) => {
 
   const project = await Project.findOne({ _id: projectId, owner: ownerId });

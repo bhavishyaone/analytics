@@ -1,4 +1,4 @@
-import { createProjectService,getAllProjectService ,getProjectByIDService,deleteProjectByIDService,rotateApiKeyService} from "../services/project.service.js";
+import { createProjectService,getAllProjectService ,getProjectByIDService,deleteProjectByIDService,rotateApiKeyService,updateProjectService} from "../services/project.service.js";
 import Project from "../models/Project.js";
 import mongoose from "mongoose";
 
@@ -115,3 +115,38 @@ export const rotateApiKey = async (req, res) => {
     return res.status(500).json({ message: "Server error."});
   }
 };
+
+
+// Update Project Name
+export const updateProject = async (req, res) => {
+    try {
+        const { name } = req.body
+
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ message: 'Invalid project ID.' })
+        }
+        if (!name) {
+            return res.status(400).json({ message: 'Project name is required.' })
+        }
+        if (name.trim().length < 5) {
+            return res.status(400).json({ message: 'Name must be at least 5 characters.' })
+        }
+        if (name.trim().length > 60) {
+            return res.status(400).json({ message: 'Name must be at most 60 characters.' })
+        }
+
+        const project = await updateProjectService(req.params.id, req.user.id, name)
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found.' })
+        }
+
+        return res.status(200).json({
+            message: 'Project updated successfully',
+            project
+        })
+    } 
+    catch (err) {
+        console.log(err)
+        return res.status(500).json({ message: 'Server error.' })
+    }
+}

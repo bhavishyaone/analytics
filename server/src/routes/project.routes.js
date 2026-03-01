@@ -1,6 +1,6 @@
 import express from 'express'
 import authMiddleware from '../midlleware/auth.middleware.js'
-import {createProject,getProject,getProjectById,deleteProjectByID,rotateApiKey} from '../controllers/project.controller.js'
+import {createProject,getProject,getProjectById,deleteProjectByID,rotateApiKey,updateProject} from '../controllers/project.controller.js'
 
 const router = express.Router()
 
@@ -125,6 +125,44 @@ router.delete('/:id', authMiddleware, deleteProjectByID);
  *         description: Project not found
  */
 router.patch("/:id/rotate-key", authMiddleware, rotateApiKey);
+
+
+/**
+ * @swagger
+ * /api/projects/{id}:
+ *   patch:
+ *     summary: Update project name
+ *     tags:
+ *       - Projects
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: My Updated App
+ *     responses:
+ *       200:
+ *         description: Project updated
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: Project not found
+ */
+router.patch('/:id', authMiddleware, updateProject)
 
 export default router;
 

@@ -48,5 +48,63 @@ export const login = async (req, res) => {
 }
 
 
+export const getMe = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('-password')
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' })
+        }
+        return res.status(200).json({
+            message: 'User fetched successfully',
+            user
+        })
+    } 
+    catch (err) {
+        console.log(err)
+        return res.status(500).json({ message: 'Server error.' })
+    }
+}
 
 
+export const updateMe = async (req, res) => {
+    try {
+        const { name, email, currentPassword, newPassword } = req.body
+
+        const user = await User.findById(req.user.id)
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' })
+        }
+
+        if (name) user.name = name.trim()
+
+        if (email) {
+            const emailTaken = await User.findOne({ email, _id: { $ne: user._id } })
+            if (emailTaken) {
+                return res.status(400).json({ message: 'Email already in use.' })
+            }
+            user.email = email
+        }
+
+        if (newPassword) {
+            if (!currentPassword) {
+                return res.status(400).json({ message: 'Current password is required to set a new one.' })
+            }
+            const isMatch = await comparePassword(currentPassword, user.password)
+            if (!isMatch) {
+                return res.status(401).json({ message: 'Current password is incorrect.' })
+            }
+            user.password = await hashPassword(newPassword)
+        }
+
+        await user.save()
+
+        return res.status(200).json({
+            message: 'Account updated successfully',
+            user: { id: user._id, name: user.name, email: user.email }
+        })
+    } 
+    catch (err) {
+        console.log(err)
+        return res.status(500).json({ message: 'Server error.' })
+    }
+}
