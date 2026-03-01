@@ -1,7 +1,8 @@
 import express from 'express'
-import { trackEvent ,batchTrackEvent} from '../controllers/event.controller.js'
+import { trackEvent ,batchTrackEvent,getEventsByProject} from '../controllers/event.controller.js'
 import apiKeyMiddleware from '../midlleware/apiKey.middleware.js'
 import rateLimit from 'express-rate-limit'
+import authMiddleware from '../midlleware/auth.middleware.js'
 
 const rateLimiter = rateLimit({
     windowMs:1 * 60 * 1000,
@@ -16,6 +17,50 @@ const rateLimiter = rateLimit({
 const router = express.Router()
 
 router.use(rateLimiter)
+
+/**
+ * @swagger
+ * /api/events/{projectId}:
+ *   get:
+ *     summary: Get all events for a project
+ *     tags:
+ *       - Events
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *       - in: query
+ *         name: name
+ *         schema:
+ *           type: string
+ *         description: Filter by event name (partial match)
+ *     responses:
+ *       200:
+ *         description: Paginated list of events
+ *       400:
+ *         description: Invalid project ID
+ *       404:
+ *         description: Project not found
+ *       401:
+ *         description: Not authenticated
+ */
+router.get('/:projectId', authMiddleware, getEventsByProject)
+
+
 router.use(apiKeyMiddleware)
 
 

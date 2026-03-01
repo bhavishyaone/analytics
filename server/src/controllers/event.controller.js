@@ -98,3 +98,54 @@ export const batchTrackEvent = async(req,res)=>{
         return res.status(500).json({ message: "Server error" });
     }
 }
+
+
+
+import Event from '../models/Event.js'
+import Project from '../models/Project.js'
+import mongoose from 'mongoose'
+
+export const getEventsByProject = async (req, res) => {
+    try {
+
+        const { projectId } = req.params
+        const { page = 1, limit = 50, name } = req.query
+
+        if (!mongoose.Types.ObjectId.isValid(projectId)) {
+            return res.status(400).json({ message: 'Invalid project ID.' })
+        }
+
+        const project = await Project.findOne({ _id: projectId, owner: req.user.id })
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found.' })
+        }
+
+        const filter = { projectId }
+        if (name) filter.name = { $regex: name, $options: 'i' }
+
+        const skip = (parseInt(page) - 1) * parseInt(limit)
+
+        const [events, total, uniqueEventTypes] = await Promise.all([
+            Event.find(filter)
+                .sort({ timestamp: -1 })
+                .skip(skip)
+                .limit(parseInt(limit))
+                .lean(),
+            Event.countDocuments(filter),
+            Event.distinct('name', { projectId })
+        ])
+
+        return res.status(200).json({
+            message: 'Events fetched successfully',
+            total,
+            page: parseInt(page),
+            limit: parseInt(limit),
+            uniqueEventTypes: uniqueEventTypes.length,
+            events
+        })
+    } 
+    catch (err) {
+        console.log(err)
+        return res.status(500).json({ message: "Server error."})
+    }
+}
