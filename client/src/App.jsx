@@ -1,16 +1,32 @@
-import './App.css'
-import { BrowserRouter,Routes,Route } from 'react-router-dom';
-import {Register} from './pages/Register.jsx'
-import {Login} from './pages/Login.jsx'
-function App(){
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-      </Routes>
-    </BrowserRouter>
-  );
-}
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider } from '../src/context/AuthContext.jsx'
+import { ProjectProvider } from '../src/context/ProjectContext.jsx'
+import { ProtectedRoute } from '../src/components/ProtectedRoute.jsx'
+import { Register } from './pages/Register.jsx'
+import { Login } from './pages/Login.jsx'
 
-export default App;
+function App() {
+    return (
+        <AuthProvider>
+            <ProjectProvider>
+                <BrowserRouter>
+                    <Routes>
+                        <Route path="/" element={<Login />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/register" element={<Register />} />
+                        <Route
+                            path="/app/*"
+                            element={
+                                <ProtectedRoute>
+                                    <div></div>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                </BrowserRouter>
+            </ProjectProvider>
+        </AuthProvider>
+    )
+  }
+export default App
