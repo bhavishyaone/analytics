@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider } from '../src/context/AuthContext.jsx'
-import { ProjectProvider } from '../src/context/ProjectContext.jsx'
-import { ProtectedRoute } from '../src/components/ProtectedRoute.jsx'
+import { AuthProvider } from './context/AuthContext.jsx'
+import { ProjectProvider } from './context/ProjectContext.jsx'
+import { ProtectedRoute } from './components/ProtectedRoute.jsx'
 import { Register } from './pages/Register.jsx'
 import { Login } from './pages/Login.jsx'
 
