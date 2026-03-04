@@ -23,7 +23,7 @@ export function AuthProvider({children}){
         else{
             setLoading(false)
         }
-    })
+    },[])
 
 
     const login = async(email,password)=>{
