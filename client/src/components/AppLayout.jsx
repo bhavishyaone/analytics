@@ -8,31 +8,26 @@ import {
   ChevronUp,
   LayoutGrid,
 } from 'lucide-react'
-import { useAuth } from '../context/AuthContext.jsx'
 import { useProject } from '../context/ProjectContext.jsx'
 
 const navItems = [
-  { to: '/app',            end: true,  icon: LayoutDashboard, label: 'Overview'  },
-  { to: '/app/events',                 icon: Zap,             label: 'Events'    },
-  { to: '/app/funnels',                icon: Filter,          label: 'Funnels'   },
-  { to: '/app/retention',              icon: Users,           label: 'Retention' },
-  { to: '/app/settings',               icon: Settings,        label: 'Settings'  },
+  { to: '/app',           end: true, icon: LayoutDashboard, label: 'Overview'  },
+  { to: '/app/events',              icon: Zap,             label: 'Events'    },
+  { to: '/app/funnels',             icon: Filter,          label: 'Funnels'   },
+  { to: '/app/retention',           icon: Users,           label: 'Retention' },
+  { to: '/app/settings',            icon: Settings,        label: 'Settings'  },
 ]
 
 export function AppLayout() {
-  const { logout } = useAuth()
   const { activeProject } = useProject()
   const navigate = useNavigate()
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
 
+
       <aside className="w-52 shrink-0 bg-white border-r border-gray-100 flex flex-col">
+
 
         <div className="flex items-center gap-2 px-5 py-5 border-b border-gray-100">
           <div className="w-7 h-7 bg-indigo-600 rounded-md flex items-center justify-center shrink-0">
@@ -40,6 +35,7 @@ export function AppLayout() {
           </div>
           <span className="font-bold text-gray-900 text-sm tracking-tight">Analytiq</span>
         </div>
+
 
         <nav className="flex-1 px-3 py-4 space-y-0.5">
           {navItems.map(({ to, end, icon: Icon, label }) => (
@@ -61,21 +57,22 @@ export function AppLayout() {
           ))}
         </nav>
 
+
         <div className="px-3 py-4 border-t border-gray-100">
           <button
-            onClick={handleLogout}
-            className="flex items-center gap-2.5 w-full px-3 py-2 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
+            onClick={() => navigate('/projects')}
+            className="flex items-center gap-2.5 w-full px-3 py-2 rounded-md hover:bg-gray-50 transition-colors"
           >
-
             <div className="w-5 h-5 rounded-full bg-gray-800 shrink-0" />
             <span className="text-sm text-gray-700 font-medium truncate flex-1 text-left">
-              {activeProject?.name || 'No project'}
+              {activeProject?.name || 'Select project'}
             </span>
             <ChevronUp className="w-3.5 h-3.5 text-gray-400 shrink-0" />
           </button>
         </div>
 
       </aside>
+
 
       <main className="flex-1 min-w-0 overflow-hidden">
         <Outlet />
