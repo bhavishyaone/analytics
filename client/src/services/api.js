@@ -13,8 +13,13 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            localStorage.removeItem('token')
-            window.location.href = '/login'
+            const url    = error.config?.url || ''
+            const method = error.config?.method || ''
+            const isAuthMutation = url.includes('/auth/me') && method === 'patch'
+            if (!isAuthMutation) {
+                localStorage.removeItem('token')
+                window.location.href = '/login'
+            }
         }
         return Promise.reject(error)
     }
