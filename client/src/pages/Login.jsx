@@ -32,13 +32,15 @@ export function Login() {
   const [password, setPassword] = useState('')
   const [loading, setLoading]   = useState(false)
   const [errors, setErrors]     = useState({ email: '', password: '' })
+  const [loginError, setLoginError] = useState('')
 
   const { login, isAuthenticated } = useAuth()
+  const navigate = useNavigate()
 
 
 
 
-  if (isAuthenticated) return <Navigate to="/app" replace />
+  if (isAuthenticated) return <Navigate to="/projects" replace />
 
   const validate = () => {
     const newErrors = { email: '', password: '' }
@@ -76,10 +78,12 @@ export function Login() {
     try {
       await login(email, password)
       toast.success('Welcome back!')
+      navigate('/projects')
 
     } 
     catch (err) {
-      toast.error(err.response?.data?.message || 'Login failed. Try again.')
+      const msg = err.response?.data?.message || 'Invalid credentials'
+      setLoginError(msg)
     } 
     finally {
       setLoading(false)
@@ -143,7 +147,7 @@ export function Login() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} noValidate className="space-y-4">
 
             <div className="space-y-1">
               <Label
@@ -160,6 +164,7 @@ export function Login() {
                 placeholder="Enter Your Email Address"
                 autoComplete="email"
                 className={`h-11 text-sm ${errors.email ? 'border-red-400' : ''}`}
+                onChange={e => { setEmail(e.target.value); setLoginError('') }}
               />
               {errors.email && (
                 <p className="text-xs text-red-500">{errors.email}</p>
@@ -181,6 +186,7 @@ export function Login() {
                 placeholder="Enter Your Password"
                 autoComplete="current-password"
                 className={`h-11 text-sm ${errors.password ? 'border-red-400' : ''}`}
+                onChange={e => { setPassword(e.target.value); setLoginError('') }}
               />
               {errors.password && (
                 <p className="text-xs text-red-500">{errors.password}</p>
@@ -194,6 +200,10 @@ export function Login() {
             >
               {loading ? 'Signing in…' : 'Sign in →'}
             </Button>
+
+            {loginError && (
+              <p className="text-sm text-red-500 text-center">{loginError}</p>
+            )}
 
           </form>
 

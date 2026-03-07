@@ -15,7 +15,8 @@ api.interceptors.response.use(
         if (error.response?.status === 401) {
             const url    = error.config?.url || ''
             const method = error.config?.method || ''
-            const isAuthMutation = url.includes('/auth/me') && method === 'patch'
+            const isAuthMutation = (url.includes('/auth/me') && method === 'patch')
+                                || (url.includes('/auth/login') && method === 'post')
             if (!isAuthMutation) {
                 localStorage.removeItem('token')
                 window.location.href = '/login'
