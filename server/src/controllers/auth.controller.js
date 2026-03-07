@@ -3,7 +3,7 @@ import { hashPassword, comparePassword, generateToken } from '../utils/auth.js'
 
 export const register = async (req, res) => {
     try {
-        const { email, password } = req.body
+        const { name, email, password } = req.body
 
         if (!email || !password)
             return res.status(400).json({ message: "All fields are required." })
@@ -13,13 +13,13 @@ export const register = async (req, res) => {
             return res.status(400).json({ message: "User already exists." })
 
         const hashedPassword = await hashPassword(password)
-        const user = await User.create({ email, password: hashedPassword })
+        const user = await User.create({ name: name?.trim() || '', email, password: hashedPassword })
         const token = generateToken(user._id)
 
         return res.status(201).json({
             message: "User created",
             token,
-            user: { id: user._id, email: user.email, createdAt: user.createdAt }
+            user: { id: user._id, name: user.name, email: user.email, createdAt: user.createdAt }
         })
     } catch (err) {
         console.log(err)
