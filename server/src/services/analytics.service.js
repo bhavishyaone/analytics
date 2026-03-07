@@ -76,7 +76,7 @@ export const getTopEventsService = async(projectId,days)=>{
     const startDate  = new Date()
     startDate.setDate(startDate.getDate()-days)
 
-    const result = Event.aggregate([
+    const result = await Event.aggregate([
         {
             $match:{
                 projectId: toObjectId(projectId),
@@ -85,21 +85,25 @@ export const getTopEventsService = async(projectId,days)=>{
         },
         {
             $group:{
-                _id:'$name',
-                count: { $sum: 1 }
+                _id: '$name',
+                count:       { $sum: 1 },
+                uniqueUsers: { $addToSet: '$userId' },   
+                lastSeen:    { $max: '$timestamp' }      
             }
         },
         {
             $sort: { count: -1 }
         },
         {
-            $limit:10
+            $limit: 50   
         }
     ])
 
-    return (await result).map((e)=>({
-        eventName : e._id,
-        count : e.count
+    return result.map((e)=>({
+        eventName:   e._id,
+        count:       e.count,
+        uniqueUsers: e.uniqueUsers.filter(u => u !== null).length,  
+        lastSeen:    e.lastSeen
     }))
 }
 
