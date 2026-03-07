@@ -180,17 +180,7 @@ export function Funnels() {
             </button>
 
 
-            <div className="border-t border-gray-100 pt-5">
-              <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">
-                Breakdown By
-              </p>
-              <div className="flex items-center justify-between h-9 px-3 border border-gray-200 rounded-lg text-sm text-gray-500 bg-gray-50 cursor-not-allowed">
-                None
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </div>
+            
 
             {error && <p className="text-xs text-rose-500">{error}</p>}
           </div>
