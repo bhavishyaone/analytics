@@ -10,6 +10,7 @@ import { Dashboard } from './pages/Dashboard.jsx'
 import { Settings } from './pages/Settings.jsx'
 import { Events } from './pages/Events.jsx'
 import { Funnels } from './pages/Funnels.jsx'
+import { Retention } from './pages/Retention.jsx'
 
 function App() {
     return (
@@ -34,6 +35,7 @@ function App() {
                             <Route path="settings" element={<Settings />} />
                             <Route path="events" element={<Events />} />
                             <Route path="funnels" element={<Funnels />} />
+                            <Route path="retention" element={<Retention />} />
                         </Route>
 
                         <Route path="*" element={<Navigate to="/" replace />} />
