@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Copy, Eye, EyeOff, RefreshCw, Plus, Check, Key, SlidersHorizontal, AlertTriangle } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -10,6 +11,7 @@ import { useProject } from '../context/ProjectContext.jsx'
 
 export function Settings() {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const { activeProject, setActiveProject } = useProject()
 
 
@@ -84,10 +86,10 @@ export function Settings() {
     mutationFn: (id) => api.delete(`/projects/${id}`).then(r => r.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] })
-      const remaining = projects.filter(p => p._id !== activeProject._id)
-      setActiveProject(remaining[0] ?? null)
+      setActiveProject(null)
       setDeleteConfirm(false)
       toast.success('Project deleted.')
+      navigate('/projects')
     },
     onError: (err) => toast.error(err.response?.data?.message || 'Failed to delete project'),
   })
@@ -140,33 +142,6 @@ export function Settings() {
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-2xl mx-auto px-8 py-8 space-y-10">
 
-
-          {!activeProject && (
-            <section className="bg-white rounded-xl border border-gray-100 p-6">
-              <h2 className="text-base font-semibold text-gray-900 mb-1">Create your first project</h2>
-              <p className="text-sm text-gray-500 mb-5">
-                Each project has its own API key and isolated event stream.
-              </p>
-              <form onSubmit={handleCreate} className="flex gap-2">
-                <input
-                  type="text"
-                  value={newProjectName}
-                  onChange={e => setNewProjectName(e.target.value)}
-                  placeholder="e.g. Acme SaaS App"
-                  className="flex-1 h-10 px-4 text-sm border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-                <button
-                  type="submit"
-                  disabled={createMutation.isPending}
-                  className="flex items-center gap-1.5 h-10 px-4 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  {createMutation.isPending ? 'Creating…' : 'Create'}
-                </button>
-              </form>
-              {newProjectError && <p className="mt-2 text-xs text-red-500">{newProjectError}</p>}
-            </section>
-          )}
 
 
           {projects.length > 1 && (
