@@ -41,8 +41,6 @@ export function Login() {
   const [searchParams] = useSearchParams()
   const isDemo = searchParams.get('demo') === 'true'
 
-  if (isAuthenticated && !isDemo) return <Navigate to="/projects" replace />
-
   useEffect(() => {
     if (isDemo) {
       if (isAuthenticated) {
@@ -51,8 +49,10 @@ export function Login() {
       setEmail('demo@gmail.com')
       setPassword('demo123')
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [isDemo])
+
+  if (isAuthenticated && !isDemo) return <Navigate to="/projects" replace />
 
   const validate = () => {
     const newErrors = { email: '', password: '' }
