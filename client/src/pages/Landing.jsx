@@ -30,6 +30,13 @@ export function Landing() {
 
       <header className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-12 sm:pt-16 pb-8 sm:pb-12 lg:pt-24 lg:pb-16 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
         <div className="max-w-2xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 text-sm font-semibold mb-6">
+             <span className="relative flex h-2 w-2">
+               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+               <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+             </span>
+             Real-Time Product Analytics Platform
+          </div>
           <h1 className="text-[40px] sm:text-[56px] md:text-[64px] font-[800] tracking-tight text-[#111827] leading-[1.05] mb-6">
             Stop guessing. Start knowing exactly how your users behave and build better products.
           </h1>
