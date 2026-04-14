@@ -139,7 +139,7 @@ export const getRetentionService = async (projectId, days) => {
     {
       $match: {
         projectId: objectId,
-        userId: { $ne: null },
+        userId: { $nin: [null, "null", "undefined", ""] },
         timestamp: { $gte: startDate },
       },
     },
