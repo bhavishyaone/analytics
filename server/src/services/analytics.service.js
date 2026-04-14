@@ -16,7 +16,7 @@ export const getOverviewServices = async(projectId,days)=>{
     const uniqueUserId = await Event.distinct('userId',{
         projectId:projectId,
         userId: { $nin: [null, "null", "undefined", ""] },
-        timestamp:{$gt:startDate}
+        timestamp: { $gte: startDate }
     })
 
     return {
