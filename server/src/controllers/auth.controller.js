@@ -95,7 +95,10 @@ export const updateMe = async (req, res) => {
             if (!currentPassword) {
                 return res.status(400).json({ message: 'Current password is required to set a new one.' })
             }
-            if (confirmPassword && newPassword !== confirmPassword) {
+            if (newPassword.length < 8) {
+                return res.status(400).json({ message: 'New password must be at least 8 characters.' })
+            }
+            if (newPassword !== confirmPassword) {
                 return res.status(400).json({ message: 'New password and confirm password do not match.' })
             }
             const isMatch = await comparePassword(currentPassword, user.password)
