@@ -62,11 +62,21 @@ export function AuthProvider({children}){
         queryClient.clear()
     }
 
+    const loginWithToken = async (token, persist = true) => {
+        if (persist) {
+            localStorage.setItem('token', token)
+        } else {
+            sessionStorage.setItem('token', token)
+        }
+        const me = await api.get('/auth/me')
+        setUser(me.data.user)
+    }
+
     const updateUser = (patch) => setUser(prev => ({ ...prev, ...patch }))
 
     const isAuthenticated = !!user
     return (
-        <AuthContext.Provider value={{ user, login, register, logout, updateUser, isAuthenticated, loading }}>
+        <AuthContext.Provider value={{ user, login, register, logout, loginWithToken, updateUser, isAuthenticated, loading }}>
             {children}
         </AuthContext.Provider>
     )

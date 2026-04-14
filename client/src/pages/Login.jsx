@@ -36,7 +36,7 @@ export function Login() {
   const [errors, setErrors]     = useState({ email: '', password: '' })
   const [loginError, setLoginError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const { login, logout, isAuthenticated } = useAuth()
+  const { login, logout, loginWithToken, isAuthenticated } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const isDemo = searchParams.get('demo') === 'true'
@@ -265,18 +265,18 @@ export function Login() {
           </div>
 
           <div className="flex flex-col space-y-3 items-center w-full">
-            <GoogleLogin
-                onSuccess={async (credentialResponse) => {
-                    try {
-                        const response = await api.post('/auth/google', {
-                            idToken: credentialResponse.credential
-                        })
-                        localStorage.setItem('token', response.data.token)
-                        window.location.href = '/projects'
-                    } catch (error) {
-                        toast.error('Google login failed. Please try again.')
-                    }
-                }}
+                <GoogleLogin
+                    onSuccess={async (credentialResponse) => {
+                        try {
+                            const response = await api.post('/auth/google', {
+                                idToken: credentialResponse.credential
+                            })
+                            await loginWithToken(response.data.token)
+                            navigate('/projects')
+                        } catch (error) {
+                            toast.error('Google login failed. Please try again.')
+                        }
+                    }}
                 onError={() => {
                     toast.error('Google login was unsuccessful.')
                 }}
