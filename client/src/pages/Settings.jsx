@@ -26,8 +26,7 @@ export function Settings() {
   const [deleteConfirm, setDeleteConfirm] = useState(false)
 
 
-  const [newProjectName, setNewProjectName]   = useState('')
-  const [newProjectError, setNewProjectError] = useState('')
+
 
 
   useEffect(() => {
@@ -44,16 +43,7 @@ export function Settings() {
 
 
 
-  const createMutation = useMutation({
-    mutationFn: (name) => api.post('/projects', { name }).then(r => r.data),
-    onSuccess: (res) => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] })
-      setActiveProject(res.project)
-      setNewProjectName('')
-      setNewProjectError('')
-    },
-    onError: (err) => toast.error(err.response?.data?.message || 'Failed to create project'),
-  })
+
 
 
   const updateMutation = useMutation({
@@ -107,13 +97,7 @@ export function Settings() {
     }
   }
 
-  const handleCreate = (e) => {
-    e.preventDefault()
-    if (!newProjectName.trim()) { setNewProjectError('Project name is required'); return }
-    if (newProjectName.trim().length < 3) { setNewProjectError('Name must be at least 3 characters'); return }
-    setNewProjectError('')
-    createMutation.mutate(newProjectName.trim())
-  }
+
 
   const handleSaveChanges = () => {
     if (!editedName.trim()) { toast.error('Project name cannot be empty'); return }
