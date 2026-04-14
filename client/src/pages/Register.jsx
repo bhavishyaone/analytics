@@ -64,8 +64,8 @@ export function Register(){
       valid = false
     } 
     else if (password.length < 8) {
-      newErrors.password = 'Password must be at least 6 characters'  
-
+      newErrors.password = 'Password must be at least 8 characters'
+      valid = false
     }
 
     setErrors(newErrors)
