@@ -14,9 +14,7 @@ const app = express();
 app.use(httpLogger);
 
 app.use(cors({
-  origin: function (origin, callback) {
-    callback(null, origin || '*');
-  },
+  origin: process.env.CLIENT_URL,
   credentials: true,
 }));
 
