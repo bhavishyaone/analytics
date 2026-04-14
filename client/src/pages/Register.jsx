@@ -1,4 +1,4 @@
-import { use, useState } from "react";
+import { useState } from "react";
 import { Link,useNavigate } from "react-router-dom";
 import { useAuth } from '../context/AuthContext.jsx'
 import toast from 'react-hot-toast'
@@ -195,7 +195,7 @@ export function Register(){
                   type={showPassword ? 'text' : 'password'}   
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  placeholder="Enter Your Email Address."
+                  placeholder="Enter Your Password"
                   autoComplete="new-password"
                   className={`h-11 text-sm pr-10 ${errors.password ? 'border-red-400' : ''}`}
                 />
