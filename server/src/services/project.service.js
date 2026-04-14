@@ -1,5 +1,7 @@
 import { generateApiKey } from '../utils/generateApiKey.js';
 import Project from "../models/Project.js";
+import Event from '../models/Event.js';
+import Funnel from '../models/Funnel.js';
 import crypto from 'crypto';
 
 export const createProjectService = async({name,owner})=>{
@@ -30,6 +32,10 @@ export const deleteProjectByIDService = async(projectId, owner)=>{
     if(!project){
         return null
     }
+    await Promise.all([
+        Event.deleteMany({ projectId }),
+        Funnel.deleteMany({ projectId }),
+    ])
     return Project.findByIdAndDelete(projectId)
 }
 
