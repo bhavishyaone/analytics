@@ -7,7 +7,7 @@ const requiredENV = [
     'GOOGLE_CLIENT_ID',
 ]
 
-export const valudateENV = ()=>{
+export const validateENV = ()=>{
     const missing = requiredENV.filter((key)=>!process.env[key])
     if (missing.length>0){
         console.log("Required ENV are missing.")

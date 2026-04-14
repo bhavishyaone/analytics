@@ -53,7 +53,7 @@ export const getProject = async(req,res)=>{
 export const getProjectById = async(req,res)=>{
     try{
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-            return res.status(404).json({ message: 'projectid formalt is invlaid.' });
+            return res.status(400).json({ message: 'Project ID format is invalid.' });
         }
 
         const project =await getProjectByIDService(req.params.id,req.user.id)

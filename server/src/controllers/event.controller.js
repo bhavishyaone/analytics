@@ -7,7 +7,7 @@ export const trackEvent = async(req,res)=>{
         const payloadSize = Buffer.byteLength(JSON.stringify(req.body))
 
         if(payloadSize>MAX_EVENT_PAYLOAD_BYTES){
-            return res.status(400).json({message:"Only 10kb payoad size is allowed"})
+            return res.status(400).json({message:"Only 10kb payload size is allowed"})
         }
 
         const { name, userId, properties, timestamp } = req.body;
@@ -36,7 +36,7 @@ export const trackEvent = async(req,res)=>{
         })
         
         return res.status(201).json({
-            message:"Event tracked succesfully",
+            message:"Event tracked successfully",
             id: event._id,
             name: event.name,
             timestamp: event.timestamp,

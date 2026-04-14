@@ -8,13 +8,15 @@ export const getOverviewServices = async(projectId,days)=>{
     const startDate = new Date()
     startDate.setDate(startDate.getDate()-days)
 
+    const pid = toObjectId(projectId)
+
     const totalEvents = await Event.countDocuments({
-        projectId:projectId,
+        projectId: pid,
         timestamp: { $gte: startDate }
     })
 
-    const uniqueUserId = await Event.distinct('userId',{
-        projectId:projectId,
+    const uniqueUserId = await Event.distinct('userId', {
+        projectId: pid,
         userId: { $nin: [null, "null", "undefined", ""] },
         timestamp: { $gte: startDate }
     })
