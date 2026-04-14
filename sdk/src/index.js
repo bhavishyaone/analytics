@@ -152,6 +152,7 @@ export function track(eventName, properties = {}) {
     return;
   }
   recentEvents.set(dedupKey, now);
+  setTimeout(() => recentEvents.delete(dedupKey), DEDUP_WINDOW_MS);
 
   const body = {
     name: eventName,
