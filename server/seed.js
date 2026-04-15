@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
-import dotenv from 'dotenv';
-import path from 'path';
+import bcrypt    from 'bcryptjs';
+import crypto    from 'crypto';
+import dotenv    from 'dotenv';
+import path      from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -16,31 +16,48 @@ import Event   from './src/models/Event.js';
 import Funnel  from './src/models/Funnel.js';
 
 
-const randomBetween = (min, max) =>
-  Math.floor(Math.random() * (max - min + 1)) + min;
+let seedValue = 20260415;
 
-const randomMinutes = (min, max) =>
-  randomBetween(min, max) * 60 * 1000;
+function random() {
+  seedValue = (seedValue * 1664525 + 1013904223) & 0xffffffff;
+  return (seedValue >>> 0) / 4294967296;
+}
 
-const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+function randomInt(min, max) {
+  return Math.floor(random() * (max - min + 1)) + min;
+}
 
-const dateFromNow = (daysAgo, extraMs = 0) => {
-  const d = new Date();
-  d.setDate(d.getDate() - daysAgo);
-  d.setHours(randomBetween(8, 22), randomBetween(0, 59), 0, 0);
-  return new Date(d.getTime() + extraMs);
-};
+function pickRandom(array) {
+  return array[Math.floor(random() * array.length)];
+}
+
+function timestampDaysAgo(daysAgo, minutesOffset = 0) {
+  if (daysAgo < 0) daysAgo = 0;
+  const date = new Date();
+  date.setDate(date.getDate() - daysAgo);
+  date.setHours(randomInt(8, 22), randomInt(0, 59), randomInt(0, 59), 0);
+  return new Date(date.getTime() + minutesOffset * 60_000);
+}
 
 
-const PAGES    = ['/', '/pricing', '/features', '/docs', '/blog', '/dashboard'];
-const BROWSERS = ['Chrome', 'Safari', 'Firefox', 'Edge'];
-const OS_LIST  = ['macOS', 'Windows', 'iOS', 'Android'];
-const COUNTRIES = ['US', 'IN', 'GB', 'DE', 'CA', 'AU', 'FR', 'JP'];
+const pageList     = ['/', '/pricing', '/features', '/docs', '/blog', '/dashboard'];
+const browserList  = ['Chrome', 'Safari', 'Firefox', 'Edge'];
+const osList       = ['macOS', 'Windows', 'iOS', 'Android'];
+const countryList  = ['US', 'IN', 'GB', 'DE', 'CA', 'AU', 'FR', 'JP'];
 
-const COMMON_EVENTS = [
+const eventTypes = [
   'page_view', 'button_click', 'feature_used',
   'settings_opened', 'video_played', 'error_occurred',
 ];
+
+function randomUserProperties() {
+  return {
+    page:    pickRandom(pageList),
+    browser: pickRandom(browserList),
+    os:      pickRandom(osList),
+    country: pickRandom(countryList),
+  };
+}
 
 
 async function seed() {
@@ -48,207 +65,162 @@ async function seed() {
   await mongoose.connect(process.env.MONGO_URL);
   console.log('Connected.\n');
 
-
-  const existingUser = await User.findOne({ email: 'demo@gmail.com' });
-  if (existingUser) {
-    const existingProject = await Project.findOne({ owner: existingUser._id });
-    if (existingProject) {
-      await Event.deleteMany({ projectId: existingProject._id });
-      await Funnel.deleteMany({ projectId: existingProject._id });
-      await Project.deleteOne({ _id: existingProject._id });
+  const existingDemoUser = await User.findOne({ email: 'demo@gmail.com' });
+  if (existingDemoUser) {
+    const existingDemoProject = await Project.findOne({ owner: existingDemoUser._id });
+    if (existingDemoProject) {
+      await Event.deleteMany({ projectId: existingDemoProject._id });
+      await Funnel.deleteMany({ projectId: existingDemoProject._id });
+      await Project.deleteOne({ _id: existingDemoProject._id });
     }
-    await User.deleteOne({ _id: existingUser._id });
+    await User.deleteOne({ _id: existingDemoUser._id });
     console.log('Old demo data cleared.\n');
   }
 
-
   const hashedPassword = await bcrypt.hash('demo123', 10);
-  const user = await User.create({
-    name: 'Demo User',
-    email: 'demo@gmail.com',
+  const demoUser = await User.create({
+    name:     'Demo User',
+    email:    'demo@gmail.com',
     password: hashedPassword,
   });
 
-
-  const apiKey  = crypto.randomBytes(24).toString('hex');
-  const project = await Project.create({
-    name: 'Demo App',
-    owner: user._id,
+  const apiKey      = crypto.randomBytes(24).toString('hex');
+  const demoProject = await Project.create({
+    name:  'Demo App',
+    owner: demoUser._id,
     apiKey,
   });
 
   console.log('Demo user and project created.');
   console.log('API Key:', apiKey, '\n');
 
-  const pid    = project._id;
-  const events = [];
+  const projectId  = demoProject._id;
+  const allEvents  = [];
+  let   userNumber = 1;
 
-  console.log('Seeding cohort-based retention events...');
 
-  const cohorts = [
-    { weekStart: 126, size: 8 },
-    { weekStart: 119, size: 10 },
-    { weekStart: 112, size: 7 },
-    { weekStart: 105, size: 11 },
-    { weekStart: 98, size: 14 },
-    { weekStart: 91, size: 12 },
-    { weekStart: 84, size: 10 },
-    { weekStart: 77, size: 12 },
-    { weekStart: 70, size: 9  },
-    { weekStart: 63, size: 14 },
-    { weekStart: 56, size: 11 },
-    { weekStart: 49, size: 13 },
-    { weekStart: 42, size: 16 },
-    { weekStart: 35, size: 12 },
-    { weekStart: 28, size: 18 },
-    { weekStart: 21, size: 15 },
-    { weekStart: 14, size: 20 },
-    { weekStart:  7, size: 22 },
-    { weekStart:  2, size: 14 },
-    { weekStart:  0, size: 10 },
+  console.log('Seeding daily traffic events...');
+
+  for (let daysBack = 90; daysBack >= 0; daysBack--) {
+    let eventsPerDay;
+    if (daysBack < 7)       eventsPerDay = randomInt(42, 60);
+    else if (daysBack < 30) eventsPerDay = randomInt(25, 42);
+    else                    eventsPerDay = randomInt(10, 24);
+
+    for (let eventIndex = 0; eventIndex < eventsPerDay; eventIndex++) {
+      allEvents.push({
+        projectId,
+        name:       pickRandom(eventTypes),
+        userId:     `anon_${randomInt(1, 100)}`,
+        properties: randomUserProperties(),
+        timestamp:  timestampDaysAgo(daysBack),
+      });
+    }
+  }
+
+
+  console.log('Seeding cohort retention events...');
+
+  const retentionCohorts = [
+    { weekStart: 126, numberOfUsers: 8  },
+    { weekStart: 119, numberOfUsers: 10 },
+    { weekStart: 112, numberOfUsers: 7  },
+    { weekStart: 105, numberOfUsers: 11 },
+    { weekStart: 98,  numberOfUsers: 14 },
+    { weekStart: 91,  numberOfUsers: 12 },
+    { weekStart: 84,  numberOfUsers: 10 },
+    { weekStart: 77,  numberOfUsers: 12 },
+    { weekStart: 70,  numberOfUsers: 9  },
+    { weekStart: 63,  numberOfUsers: 14 },
+    { weekStart: 56,  numberOfUsers: 11 },
+    { weekStart: 49,  numberOfUsers: 13 },
+    { weekStart: 42,  numberOfUsers: 16 },
+    { weekStart: 35,  numberOfUsers: 12 },
+    { weekStart: 28,  numberOfUsers: 18 },
+    { weekStart: 21,  numberOfUsers: 15 },
+    { weekStart: 14,  numberOfUsers: 20 },
+    { weekStart:  7,  numberOfUsers: 22 },
+    { weekStart:  2,  numberOfUsers: 14 },
+    { weekStart:  0,  numberOfUsers: 10 },
   ];
 
-  let userCounter = 1;
+  for (const cohort of retentionCohorts) {
+    for (let userIndex = 0; userIndex < cohort.numberOfUsers; userIndex++) {
+      const userId      = `user_${userNumber++}`;
+      const joinedDaysAgo = cohort.weekStart + randomInt(0, 6);
+      const userProps   = randomUserProperties();
 
-  for (const { weekStart, size } of cohorts) {
-    for (let u = 0; u < size; u++) {
-      const userId    = `user_${userCounter++}`;
-      const joinDay   = weekStart - randomBetween(0, 6); 
-      const props     = {
-        page:    pickRandom(PAGES),
-        browser: pickRandom(BROWSERS),
-        os:      pickRandom(OS_LIST),
-        country: pickRandom(COUNTRIES),
-      };
+      allEvents.push({ projectId, name: 'page_view',        userId, properties: userProps, timestamp: timestampDaysAgo(joinedDaysAgo) });
+      allEvents.push({ projectId, name: 'signup_started',   userId, properties: userProps, timestamp: timestampDaysAgo(joinedDaysAgo, 10) });
+      allEvents.push({ projectId, name: 'signup_completed', userId, properties: userProps, timestamp: timestampDaysAgo(joinedDaysAgo, 45) });
 
-
-      events.push({ projectId: pid, name: 'page_view',         userId, properties: props, timestamp: dateFromNow(joinDay) });
-      events.push({ projectId: pid, name: 'signup_started',    userId, properties: props, timestamp: dateFromNow(joinDay, randomMinutes(5, 20)) });
-      events.push({ projectId: pid, name: 'signup_completed',  userId, properties: props, timestamp: dateFromNow(joinDay, randomMinutes(20, 60)) });
-
-
-      if (Math.random() < 0.85 && joinDay - 1 >= 0) {
-        events.push({ projectId: pid, name: 'page_view',    userId, properties: props, timestamp: dateFromNow(joinDay - 1) });
-        events.push({ projectId: pid, name: 'feature_used', userId, properties: props, timestamp: dateFromNow(joinDay - 1, randomMinutes(10, 40)) });
+      if (random() < 0.85 && joinedDaysAgo - 1 >= 0) {
+        allEvents.push({ projectId, name: 'page_view',    userId, properties: userProps, timestamp: timestampDaysAgo(joinedDaysAgo - 1) });
+        allEvents.push({ projectId, name: 'feature_used', userId, properties: userProps, timestamp: timestampDaysAgo(joinedDaysAgo - 1, 20) });
       }
 
-
-      if (Math.random() < 0.70 && joinDay - 3 >= 0) {
-        events.push({ projectId: pid, name: 'page_view',    userId, properties: props, timestamp: dateFromNow(joinDay - 3) });
-        events.push({ projectId: pid, name: 'button_click', userId, properties: props, timestamp: dateFromNow(joinDay - 3, randomMinutes(5, 30)) });
+      if (random() < 0.70 && joinedDaysAgo - 3 >= 0) {
+        allEvents.push({ projectId, name: 'page_view',    userId, properties: userProps, timestamp: timestampDaysAgo(joinedDaysAgo - 3) });
+        allEvents.push({ projectId, name: 'button_click', userId, properties: userProps, timestamp: timestampDaysAgo(joinedDaysAgo - 3, 15) });
       }
 
-
-      if (Math.random() < 0.55 && joinDay - 7 >= 0) {
-        events.push({ projectId: pid, name: 'page_view',     userId, properties: props, timestamp: dateFromNow(joinDay - 7) });
-        events.push({ projectId: pid, name: 'feature_used',  userId, properties: props, timestamp: dateFromNow(joinDay - 7, randomMinutes(10, 50)) });
-        events.push({ projectId: pid, name: 'settings_opened', userId, properties: props, timestamp: dateFromNow(joinDay - 7, randomMinutes(60, 120)) });
+      if (random() < 0.55 && joinedDaysAgo - 7 >= 0) {
+        allEvents.push({ projectId, name: 'page_view',       userId, properties: userProps, timestamp: timestampDaysAgo(joinedDaysAgo - 7) });
+        allEvents.push({ projectId, name: 'feature_used',    userId, properties: userProps, timestamp: timestampDaysAgo(joinedDaysAgo - 7, 30) });
+        allEvents.push({ projectId, name: 'settings_opened', userId, properties: userProps, timestamp: timestampDaysAgo(joinedDaysAgo - 7, 90) });
       }
 
-
-      if (Math.random() < 0.40 && joinDay - 14 >= 0) {
-        events.push({ projectId: pid, name: 'page_view',    userId, properties: props, timestamp: dateFromNow(joinDay - 14) });
-        events.push({ projectId: pid, name: 'feature_used', userId, properties: props, timestamp: dateFromNow(joinDay - 14, randomMinutes(20, 80)) });
+      if (random() < 0.40 && joinedDaysAgo - 14 >= 0) {
+        allEvents.push({ projectId, name: 'page_view',    userId, properties: userProps, timestamp: timestampDaysAgo(joinedDaysAgo - 14) });
+        allEvents.push({ projectId, name: 'feature_used', userId, properties: userProps, timestamp: timestampDaysAgo(joinedDaysAgo - 14, 50) });
       }
 
-
-      if (Math.random() < 0.25 && joinDay - 30 >= 0) {
-        events.push({ projectId: pid, name: 'page_view',           userId, properties: props, timestamp: dateFromNow(joinDay - 30) });
-        events.push({ projectId: pid, name: 'checkout_started',    userId, properties: props, timestamp: dateFromNow(joinDay - 30, randomMinutes(15, 45)) });
-        events.push({ projectId: pid, name: 'checkout_completed',  userId, properties: props, timestamp: dateFromNow(joinDay - 30, randomMinutes(45, 90)) });
+      if (random() < 0.25 && joinedDaysAgo - 30 >= 0) {
+        allEvents.push({ projectId, name: 'page_view',          userId, properties: userProps, timestamp: timestampDaysAgo(joinedDaysAgo - 30) });
+        allEvents.push({ projectId, name: 'checkout_started',   userId, properties: userProps, timestamp: timestampDaysAgo(joinedDaysAgo - 30, 25) });
+        allEvents.push({ projectId, name: 'checkout_completed', userId, properties: userProps, timestamp: timestampDaysAgo(joinedDaysAgo - 30, 75) });
       }
-    }
-  }
-
-
-  console.log('Seeding future demo events');
-
-  const APRIL_30 = new Date('2026-04-30T23:59:59Z');
-  const TODAY    = new Date();
-  const futureDays = Math.ceil((APRIL_30 - TODAY) / (1000 * 60 * 60 * 24));
-
-  for (let dayOffset = 0; dayOffset <= futureDays; dayOffset++) {
-    const dayUserCount = randomBetween(8, 15);
-    for (let u = 0; u < dayUserCount; u++) {
-      const fUserId = `future_demo_${dayOffset}_${u}`;
-      const fProps  = {
-        page:    pickRandom(PAGES),
-        browser: pickRandom(BROWSERS),
-        os:      pickRandom(OS_LIST),
-        country: pickRandom(COUNTRIES),
-      };
-
-      events.push({ projectId: pid, name: 'page_view',    userId: fUserId, properties: fProps, timestamp: dateFromNow(-dayOffset) });
-      events.push({ projectId: pid, name: 'feature_used', userId: fUserId, properties: fProps, timestamp: dateFromNow(-dayOffset, randomMinutes(10, 40)) });
-      if (Math.random() < 0.6) {
-        events.push({ projectId: pid, name: 'button_click', userId: fUserId, properties: fProps, timestamp: dateFromNow(-dayOffset, randomMinutes(40, 90)) });
-      }
-    }
-  }
-
-
-  console.log('Seeding chart background noise...');
-
-  for (let day = 90; day >= 0; day--) {
-    const baseCount = day < 7 ? 50 : day < 30 ? 30 : 12;
-    const count     = randomBetween(baseCount - 8, baseCount + 15);
-
-    for (let j = 0; j < count; j++) {
-      events.push({
-        projectId:  pid,
-        name:       pickRandom(COMMON_EVENTS),
-        userId:     `anon_${randomBetween(1, 80)}`,
-        properties: {
-          page:    pickRandom(PAGES),
-          browser: pickRandom(BROWSERS),
-          os:      pickRandom(OS_LIST),
-          country: pickRandom(COUNTRIES),
-        },
-        timestamp: dateFromNow(day),
-      });
     }
   }
 
 
   console.log('Seeding funnel conversion events...');
 
-  const funnelUsers = Array.from({ length: 200 }, (_, i) => `funnel_user_${i + 1}`);
+  for (let funnelUserIndex = 1; funnelUserIndex <= 200; funnelUserIndex++) {
+    const userId        = `funnel_user_${funnelUserIndex}`;
+    const signupDate    = timestampDaysAgo(randomInt(5, 35));
 
-  for (const userId of funnelUsers) {
-    const base = dateFromNow(randomBetween(5, 35));
+    allEvents.push({ projectId, name: 'page_view',         userId, properties: {}, timestamp: new Date(signupDate) });
 
-    events.push({ projectId: pid, name: 'page_view',          userId, properties: {}, timestamp: new Date(base.getTime()) });
+    if (random() < 0.75) {
+      allEvents.push({ projectId, name: 'signup_completed',  userId, properties: {}, timestamp: new Date(signupDate.getTime() +  180_000) });
 
-    if (Math.random() < 0.75) {
-      events.push({ projectId: pid, name: 'signup_completed', userId, properties: {}, timestamp: new Date(base.getTime() + 180_000) });
-      
-      if (Math.random() < 0.60) {
-        events.push({ projectId: pid, name: 'checkout_started', userId, properties: {}, timestamp: new Date(base.getTime() + 600_000) });
-        
-        if (Math.random() < 0.75) {
-          events.push({ projectId: pid, name: 'checkout_completed', userId, properties: {}, timestamp: new Date(base.getTime() + 900_000) });
+      if (random() < 0.60) {
+        allEvents.push({ projectId, name: 'checkout_started', userId, properties: {}, timestamp: new Date(signupDate.getTime() +  600_000) });
+
+        if (random() < 0.75) {
+          allEvents.push({ projectId, name: 'checkout_completed', userId, properties: {}, timestamp: new Date(signupDate.getTime() + 900_000) });
         }
       }
     }
   }
 
-  await Event.insertMany(events);
-  console.log(`Inserted ${events.length} total events.\n`);
-
+  await Event.insertMany(allEvents);
+  console.log(`Inserted ${allEvents.length} total events.\n`);
 
   await Funnel.create({
-    projectId:      pid,
+    projectId,
     name:           'Signup to Checkout',
     steps:          ['page_view', 'signup_completed', 'checkout_started', 'checkout_completed'],
     timeWindowDays: 30,
   });
 
-  console.log('─────────────────────────────────────────');
+
   console.log('Seed complete!');
   console.log('   Login email : demo@gmail.com');
   console.log('   Password    : demo123');
   console.log('   Project     : Demo App');
-  console.log('─────────────────────────────────────────');
+
 
   await mongoose.disconnect();
   process.exit(0);
