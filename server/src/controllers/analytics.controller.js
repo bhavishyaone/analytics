@@ -1,117 +1,103 @@
 import mongoose from 'mongoose'
 import Project from '../models/Project.js'
-import {getOverviewServices,getEventsOverTimeService,getTopEventsService,getActiveUsersService,getRetentionService} from '../services/analytics.service.js'
+import { getOverviewServices, getEventsOverTimeService, getTopEventsService, getActiveUsersService, getRetentionService } from '../services/analytics.service.js'
+import { getDemoOverview, getDemoEventsOverTime, getDemoTopEvents, getDemoActiveUsers, getDemoRetention } from '../services/demo.analytics.js'
 
-const getOwnedProject = async(projectId,userId)=>{
-    if(!mongoose.Types.ObjectId.isValid(projectId)){
-        return null
-    }
-    const project = await Project.findOne({ _id: projectId, owner: userId });
-    return project
+const isDemo = (req) => req.user?.email === 'demo@gmail.com'
+
+const getOwnedProject = async (projectId, userId) => {
+  if (!mongoose.Types.ObjectId.isValid(projectId)) return null
+  return Project.findOne({ _id: projectId, owner: userId })
 }
 
-export const getOverview = async(req,res)=>{
+export const getOverview = async (req, res) => {
+  try {
+    const project = await getOwnedProject(req.params.projectId, req.user.id)
+    if (!project) return res.status(400).json({ message: 'Project not found.' })
 
-    try{
-        const project = await getOwnedProject(req.params.projectId,req.user.id)
-        if(!project){
-            return res.status(400).json({message:"Project not found."})
-        }
+    const days = parseInt(req.query.days) || 30
+    if (days < 1 || days > 365) return res.status(400).json({ message: 'days must be between 1 and 365' })
 
-        const days = parseInt(req.query.days) || 30
-        if(days<1 || days>365){
-            return res.status(400).json({message:"days must be between 1 and 365"})
-        }
-        
-        const data = await getOverviewServices(req.params.projectId, days);
-        return res.status(200).json({ data });
-    }
-    catch(err){
-        console.log(err)
-        return res.status(500).json({message:"Server error."})
-    }
+    const data = isDemo(req)
+      ? getDemoOverview(days)
+      : await getOverviewServices(req.params.projectId, days)
 
-};
-
-export const getEventsOverTime = async(req,res)=>{
-    try{
-        const project = await getOwnedProject(req.params.projectId,req.user.id)
-        if(!project){
-            return res.status(400).json({message:"Project not found."})
-        }
-
-        const days = parseInt(req.query.days) || 30
-
-        if(days<1 || days>365){
-            return res.status(400).json({message:"days must be between 1 and 365"})
-        }
-
-        const data = await getEventsOverTimeService(req.params.projectId, days);
-        return res.status(200).json({ data });
-    }
-    catch(err){
-        console.log(err)
-        return res.status(500).json({message:"Server error."})
-    }
-}
-export const getTopEvents = async(req,res)=>{
-    try{
-        const project = await getOwnedProject(req.params.projectId, req.user.id)
-        if(!project){
-            return res.status(400).json({message:"Project not found"})
-        }
-        const days = parseInt(req.query.days) || 30
-        
-        if(days<1 || days>365){
-            return res.status(400).json({message:"days must be between 1 and 365"})
-        }
-
-        const data  = await getTopEventsService(req.params.projectId,days)
-        return res.status(200).json({data})
-
-
-    }   
-    catch(err){
-        console.log(err)
-        return res.status(500).json({message:"Server error."})
-    }
-}
-export const getActiveUser = async(req,res)=>{
-    try{
-        const project = await getOwnedProject(req.params.projectId,req.user.id)
-        
-        if(!project){
-            return res.status(400).json({message:"Project not found"})
-        }
-
-        const data = await getActiveUsersService(req.params.projectId)
-        return res.status(200).json({data})
-    }
-    catch(err){
-        console.log(err)
-        return res.status(500).json({message:"Server error."})
-    }
+    return res.status(200).json({ data })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ message: 'Server error.' })
+  }
 }
 
+export const getEventsOverTime = async (req, res) => {
+  try {
+    const project = await getOwnedProject(req.params.projectId, req.user.id)
+    if (!project) return res.status(400).json({ message: 'Project not found.' })
 
+    const days = parseInt(req.query.days) || 30
+    if (days < 1 || days > 365) return res.status(400).json({ message: 'days must be between 1 and 365' })
+
+    const data = isDemo(req)
+      ? getDemoEventsOverTime(days)
+      : await getEventsOverTimeService(req.params.projectId, days)
+
+    return res.status(200).json({ data })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ message: 'Server error.' })
+  }
+}
+
+export const getTopEvents = async (req, res) => {
+  try {
+    const project = await getOwnedProject(req.params.projectId, req.user.id)
+    if (!project) return res.status(400).json({ message: 'Project not found.' })
+
+    const days = parseInt(req.query.days) || 30
+    if (days < 1 || days > 365) return res.status(400).json({ message: 'days must be between 1 and 365' })
+
+    const data = isDemo(req)
+      ? getDemoTopEvents(days)
+      : await getTopEventsService(req.params.projectId, days)
+
+    return res.status(200).json({ data })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ message: 'Server error.' })
+  }
+}
+
+export const getActiveUser = async (req, res) => {
+  try {
+    const project = await getOwnedProject(req.params.projectId, req.user.id)
+    if (!project) return res.status(400).json({ message: 'Project not found.' })
+
+    const data = isDemo(req)
+      ? getDemoActiveUsers()
+      : await getActiveUsersService(req.params.projectId)
+
+    return res.status(200).json({ data })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ message: 'Server error.' })
+  }
+}
 
 export const getRetention = async (req, res) => {
   try {
-    const project = await getOwnedProject(req.params.projectId, req.user.id);
-    if (!project) {
-      return res.status(404).json({ message: 'Project not found.' });
-    }
+    const project = await getOwnedProject(req.params.projectId, req.user.id)
+    if (!project) return res.status(404).json({ message: 'Project not found.' })
 
-    const days = parseInt(req.query.days) || 90;
-    if (days < 1 || days > 365) {
-      return res.status(400).json({ message: 'days must be between 1 and 365.' });
-    }
+    const days = parseInt(req.query.days) || 90
+    if (days < 1 || days > 365) return res.status(400).json({ message: 'days must be between 1 and 365.' })
 
-    const data = await getRetentionService(req.params.projectId, days);
-    return res.status(200).json({ data });
-    
+    const data = isDemo(req)
+      ? getDemoRetention()
+      : await getRetentionService(req.params.projectId, days)
+
+    return res.status(200).json({ data })
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: 'Server error.' });
+    console.error(err)
+    return res.status(500).json({ message: 'Server error.' })
   }
-};
+}

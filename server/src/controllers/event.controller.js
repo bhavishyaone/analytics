@@ -104,7 +104,9 @@ export const batchTrackEvent = async(req,res,next)=>{
 
 import Event from '../models/Event.js'
 import Project from '../models/Project.js'
+import User from '../models/User.js'
 import mongoose from 'mongoose'
+import { getDemoEventsByProject } from '../services/demo.analytics.js'
 
 export const getEventsByProject = async (req, res, next) => {
     try {
@@ -125,6 +127,14 @@ export const getEventsByProject = async (req, res, next) => {
         if (name) filter.name = { $regex: name, $options: 'i' }
 
         const skip = (parseInt(page) - 1) * parseInt(limit)
+
+        const demoUser = await User.findById(req.user.id)
+        if (demoUser?.email === 'demo@gmail.com') {
+            const page_ = parseInt(page)
+            const limit_ = parseInt(limit)
+            const result = getDemoEventsByProject(page_, limit_, name)
+            return res.status(200).json({ message: 'Events fetched successfully', ...result })
+        }
 
         const [events, total, uniqueEventTypes] = await Promise.all([
             Event.find(filter)

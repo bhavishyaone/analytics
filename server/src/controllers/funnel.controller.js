@@ -4,7 +4,9 @@ import {
   listFunnelsService,
   deleteFunnelService,
 } from '../services/funnel.service.js';
+import { getDemoFunnelList, getDemoFunnelData } from '../services/demo.analytics.js';
 import Project from '../models/Project.js';
+import User from '../models/User.js';
 import mongoose from 'mongoose';
 
 
@@ -63,6 +65,12 @@ export const listFunnels = async (req, res) => {
     if (!project) return res.status(404).json({ message: 'Project not found.' });
 
     const funnels = await listFunnelsService(projectId);
+
+    const demoUser = await User.findById(req.user.id)
+    if (demoUser?.email === 'demo@gmail.com') {
+      return res.status(200).json({ message: 'Funnels fetched.', funnels: getDemoFunnelList() })
+    }
+
     return res.status(200).json({ message: 'Funnels fetched.', funnels });
   } catch (err) {
     console.error(err);
@@ -116,6 +124,12 @@ export const getFunnel = async (req, res) => {
     const days = parseInt(req.query.days) || 30;
     if (days < 1 || days > 365)
       return res.status(400).json({ message: 'days must be between 1 and 365.' });
+
+    const demoUser = await User.findById(req.user.id)
+    if (demoUser?.email === 'demo@gmail.com') {
+      const data = getDemoFunnelData(steps)
+      return res.status(200).json({ message: 'Funnel data fetched.', data })
+    }
 
     const data = await getFunnelServices(req.params.projectId, steps, days);
     return res.status(200).json({ message: 'Funnel data fetched.', data });
