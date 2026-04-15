@@ -33,7 +33,7 @@ export const getEventsOverTimeService = async(projectId,days)=>{
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - (days - 1))
     startDate.setHours(0, 0, 0, 0)
-   
+
     const result = await Event.aggregate([
         {
             $match:{
@@ -41,22 +41,33 @@ export const getEventsOverTimeService = async(projectId,days)=>{
                 timestamp: { $gte: startDate },
             }
         },
-
         {
             $group:{
                 _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp', timezone: 'Asia/Kolkata' } },
                 count: { $sum: 1 },
             }
         },
-
         {
             $sort: { _id: 1 }
         }
     ])
-    return result.map((e)=>({
-        date: e._id,
-        count: e.count,
-    }))
+
+    // Build a lookup map from the DB result
+    const countByDate = {}
+    for (const entry of result) {
+        countByDate[entry._id] = entry.count
+    }
+
+    // Generate ALL date labels for the range and fill missing days with 0
+    const allDays = []
+    for (let i = days - 1; i >= 0; i--) {
+        const d = new Date()
+        d.setDate(d.getDate() - i)
+        const label = d.toISOString().split('T')[0]
+        allDays.push({ date: label, count: countByDate[label] ?? 0 })
+    }
+
+    return allDays
 }
 export const getTopEventsService = async(projectId,days)=>{
     const startDate  = new Date()
