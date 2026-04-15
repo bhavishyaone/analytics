@@ -50,7 +50,7 @@ export function Login() {
       setPassword('demo123')
     }
 
-  }, [isDemo])
+  }, [isDemo, isAuthenticated, logout])
 
   if (isAuthenticated && !isDemo) return <Navigate to="/projects" replace />
 

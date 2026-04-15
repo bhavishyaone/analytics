@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
-import { Copy, Check, LayoutGrid } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../services/api.js'
 import { useAuth } from '../context/AuthContext.jsx'

@@ -352,7 +352,7 @@ export function Funnels() {
                         className="h-full rounded-lg transition-all duration-700"
                         style={{
                           width: `${Math.max(1, item.conversionFromFirst)}%`,
-                          backgroundColor: `rgba(79,70,229,${1 - index * 0.25})`,
+                          backgroundColor: `rgba(79,70,229,${Math.max(0.15, 1 - index * 0.15)})`,
                         }}
                       />
                     </div>
