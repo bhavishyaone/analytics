@@ -108,27 +108,31 @@ export const getActiveUsersService = async(projectId)=>{
     const now = new Date()
     const pid = toObjectId(projectId)
 
-    const oneDayAgo = new Date(now - 1 * 24 * 60 * 60 * 1000);
-    const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
-    const thirtyDaysAgo = new Date(now - 30 * 24 * 60 * 60 * 1000);
+    const startOfToday = new Date(now)
+    startOfToday.setHours(0, 0, 0, 0)
+
+    const sevenDaysAgo  = new Date(now - 7  * 24 * 60 * 60 * 1000)
+    const thirtyDaysAgo = new Date(now - 30 * 24 * 60 * 60 * 1000)
+
+    const validUserId = { $nin: [null, 'null', 'undefined', ''] }
 
     const [dauIds, wauIds, mauIds] = await Promise.all([
 
       Event.distinct('userId',{
         projectId: pid,
-        userId: { $nin: [null, "null", "undefined", ""] },
-        timestamp: { $gte: oneDayAgo },
+        userId: validUserId,
+        timestamp: { $gte: startOfToday },
       }),
 
       Event.distinct('userId',{
         projectId: pid,
-        userId: { $nin: [null, "null", "undefined", ""] },
+        userId: validUserId,
         timestamp: { $gte: sevenDaysAgo }
       }),
 
       Event.distinct('userId', {
         projectId: pid,
-        userId: { $nin: [null, "null", "undefined", ""] },
+        userId: validUserId,
         timestamp: { $gte: thirtyDaysAgo },
       }),
 
