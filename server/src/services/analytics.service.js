@@ -6,7 +6,8 @@ const toObjectId = (id) => new mongoose.Types.ObjectId(id)
 export const getOverviewServices = async(projectId,days)=>{
 
     const startDate = new Date()
-    startDate.setDate(startDate.getDate()-days)
+    startDate.setDate(startDate.getDate() - (days - 1))
+    startDate.setHours(0, 0, 0, 0)
 
     const pid = toObjectId(projectId)
 
@@ -30,7 +31,8 @@ export const getOverviewServices = async(projectId,days)=>{
 
 export const getEventsOverTimeService = async(projectId,days)=>{
     const startDate = new Date();
-    startDate.setDate(startDate.getDate()-days)
+    startDate.setDate(startDate.getDate() - (days - 1))
+    startDate.setHours(0, 0, 0, 0)
    
     const result = await Event.aggregate([
         {
@@ -58,7 +60,8 @@ export const getEventsOverTimeService = async(projectId,days)=>{
 }
 export const getTopEventsService = async(projectId,days)=>{
     const startDate  = new Date()
-    startDate.setDate(startDate.getDate()-days)
+    startDate.setDate(startDate.getDate() - (days - 1))
+    startDate.setHours(0, 0, 0, 0)
 
     const result = await Event.aggregate([
         {
@@ -133,7 +136,8 @@ export const getActiveUsersService = async(projectId)=>{
 export const getRetentionService = async (projectId, days) => {
     
   const startDate = new Date();
-  startDate.setDate(startDate.getDate() - days);
+  startDate.setDate(startDate.getDate() - (days - 1));
+  startDate.setHours(0, 0, 0, 0);
 
   const objectId = new mongoose.Types.ObjectId(projectId);
 
