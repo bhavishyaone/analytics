@@ -14,7 +14,9 @@ const app = express();
 app.use(httpLogger);
 
 app.use(cors({
-  origin: process.env.CLIENT_URL,
+  origin: function (origin, callback) {
+    callback(null, origin || '*');
+  },
   credentials: true,
 }));
 
@@ -35,7 +37,7 @@ app.use("/api/funnel",funnelRoutes)
 
 
 app.use((req, res) => {
-    res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: `Route ${req.method} ${req.path} not found` } })
+  res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: `Route ${req.method} ${req.path} not found` } })
 })
 app.use(errorHandler)
 
