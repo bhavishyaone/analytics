@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Search, Download, Calendar, BarChart2, Layers, RefreshCw } from 'lucide-react'
@@ -79,6 +79,18 @@ export function Events() {
   const [search, setSearch]     = useState('')
   const [page, setPage]         = useState(1)
   const [dateOpen, setDateOpen] = useState(false)
+  const dateDropdownRef         = useRef(null)
+
+  useEffect(() => {
+    if (!dateOpen) return
+    const handleClickOutside = (e) => {
+      if (dateDropdownRef.current && !dateDropdownRef.current.contains(e.target)) {
+        setDateOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [dateOpen])
 
   const { data: overviewData } = useQuery({
     queryKey: ['overview', projectId, days],
@@ -205,7 +217,7 @@ export function Events() {
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <div className="relative flex-1 sm:flex-none">
+              <div className="relative flex-1 sm:flex-none" ref={dateDropdownRef}>
                 <button
                 onClick={() => setDateOpen(o => !o)}
                 className="flex items-center gap-2 h-9 px-3 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"

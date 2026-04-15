@@ -162,6 +162,7 @@ export function Dashboard() {
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
+    URL.revokeObjectURL(link.href)
   }
 
   return (

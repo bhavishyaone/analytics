@@ -127,7 +127,6 @@ export function reset() {
   removeFromStorage("analytiq-offline-queue");
 
   logMessage("SDK reset. User session cleared.");
-  console.log("[analytiq] SDK reset. User session cleared.");
 }
 
 export function track(eventName, properties = {}) {
@@ -177,12 +176,19 @@ export function batchTrack(events = []) {
     return;
   }
 
-  const enrichedEvents = events.map((e) => ({
-    name: e.name,
-    userId: e.userId || currentUserId,
-    properties: e.properties || {},
-    timestamp: e.timestamp || new Date().toISOString(),
-  }));
+  const enrichedEvents = events.map((e) => {
+    let ts = e.timestamp
+    if (ts && isNaN(new Date(ts).getTime())) {
+      console.warn(`[analytiq] batchTrack() received an invalid timestamp "${ts}". Using current time instead.`)
+      ts = null
+    }
+    return {
+      name: e.name,
+      userId: e.userId || currentUserId,
+      properties: e.properties || {},
+      timestamp: ts || new Date().toISOString(),
+    }
+  });
 
   if (!isInitialized) {
     logMessage("SDK not initialized yet. Batch queued.");

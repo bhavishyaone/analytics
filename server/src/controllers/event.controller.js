@@ -2,7 +2,7 @@ import { trackEventService,batchTrackService } from "../services/event.service.j
 
 const MAX_EVENT_PAYLOAD_BYTES = parseInt(process.env.MAX_EVENT_PAYLOAD_BYTES) || 10240;
 
-export const trackEvent = async(req,res)=>{
+export const trackEvent = async(req,res,next)=>{
     try{
         const payloadSize = Buffer.byteLength(JSON.stringify(req.body))
 
@@ -45,11 +45,10 @@ export const trackEvent = async(req,res)=>{
 
     }
     catch(err){
-        console.error(err);
-        return res.status(500).json({ message: 'Server error' });
+        next(err);
     }
 }
-export const batchTrackEvent = async(req,res)=>{
+export const batchTrackEvent = async(req,res,next)=>{
     try{
         const payloadSize = Buffer.byteLength(JSON.stringify(req.body))
 
@@ -65,16 +64,26 @@ export const batchTrackEvent = async(req,res)=>{
             return res.status(400).json({message:"events must be in array"})
         }
 
-        if(events.length==0){
+        if (events.length === 0) {
             return res.status(400).json({message:"events array can not be empty."})
         }
         if(events.length>100){
             return res.status(400).json({message:"Maximum 100 events per batch is allowed only."})
         }
 
-        for(let i=0;i<events.length;i++){
-            if(!events[i].name){
-                return res.status(400).json({message:"name is missing ,events must have the name"})
+        for (let i = 0; i < events.length; i++) {
+            const e = events[i]
+            if (!e.name) {
+                return res.status(400).json({ message: `Event at index ${i} is missing a name.` })
+            }
+            if (typeof e.name !== 'string') {
+                return res.status(400).json({ message: `Event at index ${i}: name must be a string.` })
+            }
+            if (e.name.trim().length === 0) {
+                return res.status(400).json({ message: `Event at index ${i}: name cannot be empty.` })
+            }
+            if (e.name.trim().length > 100) {
+                return res.status(400).json({ message: `Event at index ${i}: name must be at most 100 characters.` })
             }
         }
 
@@ -87,8 +96,7 @@ export const batchTrackEvent = async(req,res)=>{
 
     }
     catch(err){
-        console.error(err);
-        return res.status(500).json({ message: "Server error" });
+        next(err);
     }
 }
 
@@ -98,7 +106,7 @@ import Event from '../models/Event.js'
 import Project from '../models/Project.js'
 import mongoose from 'mongoose'
 
-export const getEventsByProject = async (req, res) => {
+export const getEventsByProject = async (req, res, next) => {
     try {
 
         const { projectId } = req.params
@@ -138,7 +146,6 @@ export const getEventsByProject = async (req, res) => {
         })
     } 
     catch (err) {
-        console.log(err)
-        return res.status(500).json({ message: "Server error."})
+        next(err)
     }
 }
