@@ -54,7 +54,7 @@ export function init(apiKey, options = {}) {
   }
 
   currentApiKey = apiKey;
-  backendUrl = options.host || "https://analytiq-elxb.onrender.com/";
+  backendUrl = options.host || "https://analytiq-elxb.onrender.com";
   isDebugMode = options.debug === true;
 
   const savedUserId = getFromStorage("analytiq-user-id");
